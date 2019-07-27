@@ -1,0 +1,59 @@
+<script src="Js/BloggerParser.js"></script>
+<script src="Js/HtmlComposer.js"></script>
+
+<style>
+  .category {
+    cursor: pointer;
+    -webkit-user-select: none;
+    /* Safari 3.1+ */
+    -moz-user-select: none;
+    /* Firefox 2+ */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Standard syntax */
+  }
+
+  .nest {
+    display: none;
+    -webkit-user-select: none;
+    /* Safari 3.1+ */
+    -moz-user-select: none;
+    /* Firefox 2+ */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Standard syntax */
+  }
+
+  .active {
+    display: block;
+  }
+</style>
+
+<script>
+  function handlePosts(jsonString) {
+    var bloggerData = parseBloggerData(jsonString);
+    var string = composeHierarchyTagString(bloggerData);
+    document.write(string);
+
+    var toggler = document.getElementsByClassName("category");
+    for (var i = 0; i < toggler.length; i++) {
+      toggler[i].addEventListener("click", (function (index) {
+        return function () {
+          this.querySelector(".nest").classList.toggle("active");
+          var tag = document.getElementsByClassName("categoryTag")[index];
+          if (tag.innerHTML === "▼&nbsp;") {
+            tag.innerHTML = "&#9658;&#160;";
+          }
+          else {
+            tag.innerHTML = "&#9660;&#160;";
+          }
+        };
+      })(i));
+    }
+  }
+</script>
+
+<script
+  src='http://windazure.blogspot.com/feeds/posts/default?alt=json-in-script&amp;max-results=400&amp;start-index=1&amp;callback=handlePosts'> </script>
