@@ -1,0 +1,163 @@
+<style>
+  .category {
+    cursor: pointer;
+    -webkit-user-select: none;
+    /* Safari 3.1+ */
+    -moz-user-select: none;
+    /* Firefox 2+ */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Standard syntax */
+  }
+
+  .nest {
+    display: none;
+    -webkit-user-select: none;
+    /* Safari 3.1+ */
+    -moz-user-select: none;
+    /* Firefox 2+ */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Standard syntax */
+  }
+
+  .active {
+    display: block;
+  }
+</style>
+
+<script type='text/javascript'>
+  // <![CDATA[
+  function parseEntryCategoryInfo(entry) {
+    if (entry === undefined) {
+      return [];
+    }
+
+    var categoryList = [];
+    var categoryItemList = entry["category"];
+    for (var i = 0; (categoryItemList !== undefined) && i < categoryItemList.length; i++) {
+      var category = categoryItemList[i]["term"];
+      if (category !== undefined) {
+        categoryList.push(category);
+      }
+    }
+    return categoryList;
+  }
+
+  function parseEntryArticleInfo(entry) {
+    if (entry === undefined) {
+      return undefined;
+    }
+
+    var linkList = entry["link"];
+    for (var i = 0; (linkList !== undefined) && i < linkList.length; i++) {
+      if (linkList[i]["rel"] === "alternate") {
+        var href = linkList[i]["href"];
+        var title = linkList[i]["title"];
+        return (href !== undefined && title !== undefined) ? { "href": href, "title": title } : undefined;
+      }
+    }
+    return undefined;
+  }
+
+  function parseFeedCategoryInfo(feed) {
+    if (feed === undefined) {
+      return [];
+    }
+
+    var categoryList = [];
+    var category = feed["category"];
+    for (var i = 0; (category !== undefined) && i < category.length; i++) {
+      var term = category[i]["term"];
+      if (term !== undefined) {
+        categoryList.push(term);
+      }
+    }
+    return categoryList;
+  }
+
+  function composeArticle(articleList) {
+    var nestString = "";
+    articleList.forEach(function (article) {
+      var hrefLinkString = "<a href='" + article["href"] + "'>";
+      nestString += "<li>" + hrefLinkString + article["title"] + "</a></li>";
+    })
+    return "<ul class='nest'>" + nestString + "</ul>";
+  }
+
+  function composeHierarchyTagString(bloggerData) {
+    var composeHierarchyTagString = "";
+    Object.keys(bloggerData).forEach(function (category) {
+      var categoryTitle = category + " (" + bloggerData[category].length + ")";
+      var categoryContents = "<li class='category'><span class='categoryTag'>&#9660;&#160;</span>" + "<span>" + categoryTitle + "</span>";
+      categoryContents = categoryContents + composeArticle(bloggerData[category]) + "</li>";
+      composeHierarchyTagString += categoryContents;
+    });
+    return "<ul>" + composeHierarchyTagString + "</ul>";
+  }
+
+  function parseBloggerData(data) {
+    if (data === undefined || data["feed"] === undefined) {
+      return {};
+    }
+
+    var result = {};
+    var totalCategoryList = parseFeedCategoryInfo(data["feed"]);
+    if (totalCategoryList !== undefined) {
+      totalCategoryList.forEach(function (category) {
+        result[category] = [];
+      });
+    }
+
+    var entryList = data["feed"]["entry"];
+    if (entryList !== undefined) {
+      entryList.forEach(function (entry) {
+        var articleInfo = parseEntryArticleInfo(entry);
+        var articleCategoryList = parseEntryCategoryInfo(entry);
+
+        for (var i = 0; i < totalCategoryList.length; i++) {
+          var targetCategory = totalCategoryList[i];
+          for (var j = 0; j < articleCategoryList.length; j++) {
+            if (articleCategoryList[j] === targetCategory) {
+              result[targetCategory].push(articleInfo);
+            }
+          }
+        }
+      });
+    }
+
+    return result;
+  }
+
+  function changeToggleTag(index) {
+    var tag = document.getElementsByClassName("categoryTag")[index];
+    if (tag.innerHTML === "▼&nbsp;") {
+      tag.innerHTML = "&#9658;&#160;";
+    }
+    else {
+      tag.innerHTML = "&#9660;&#160;";
+    }
+  }
+
+  function handlePosts(jsonString) {
+    var bloggerData = parseBloggerData(jsonString);
+    var string = composeHierarchyTagString(bloggerData);
+    document.write(string);
+
+    var toggler = document.getElementsByClassName("category");
+    for (var i = 0; i < toggler.length; i++) {
+      toggler[i].addEventListener("click", (function (index) {
+        return function () {
+          this.querySelector(".nest").classList.toggle("active");
+          changeToggleTag(index);
+        };
+      })(i));
+    }
+  }
+      // ]]>
+</script>
+
+<script
+  src='http://windazure.blogspot.com/feeds/posts/default?alt=json-in-script&amp;max-results=400&amp;start-index=1&amp;callback=handlePosts'> </script>

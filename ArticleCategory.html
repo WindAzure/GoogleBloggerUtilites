@@ -1,0 +1,230 @@
+<b:widget id='BlogArchive2' locked='false' title='文章分類' type='BlogArchive' version='1'>
+    <b:widget-settings>
+      <b:widget-setting name='showStyle'>HIERARCHY</b:widget-setting>
+      <b:widget-setting name='yearPattern'>yyyy</b:widget-setting>
+      <b:widget-setting name='showWeekEnd'>true</b:widget-setting>
+      <b:widget-setting name='monthPattern'>MMMM</b:widget-setting>
+      <b:widget-setting name='dayPattern'>MMM dd</b:widget-setting>
+      <b:widget-setting name='weekPattern'>MM/dd</b:widget-setting>
+      <b:widget-setting name='chronological'>false</b:widget-setting>
+      <b:widget-setting name='showPosts'>true</b:widget-setting>
+      <b:widget-setting name='frequency'>MONTHLY</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+      <b:if cond='data:title != &quot;&quot;'>
+        <h2><data:title/></h2>
+      </b:if>
+      <div class='widget-content'>
+      <div id='ArchiveList'>
+      <style>
+        .category {
+            cursor: pointer;
+            -webkit-user-select: none; /* Safari 3.1+ */
+            -moz-user-select: none; /* Firefox 2+ */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
+        .nest {
+            display: none;
+			-webkit-user-select: none; /* Safari 3.1+ */
+            -moz-user-select: none; /* Firefox 2+ */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
+        .active {
+            display: block;
+        }
+      </style>
+
+      <script type='text/javascript'>
+          // <![CDATA[
+          function parseEntryCategoryInfo(entry) {
+              if (entry === undefined) {
+                  return [];
+              }
+
+              var categoryList = [];
+              var categoryItemList = entry["category"];
+              for (var i = 0; (categoryItemList !== undefined) && i < categoryItemList.length; i++) {
+                  var category = categoryItemList[i]["term"];
+                  if (category !== undefined) {
+                      categoryList.push(category);
+                  }
+              }
+              return categoryList;
+          }
+
+          function parseEntryArticleInfo(entry) {
+              if (entry === undefined) {
+                  return undefined;
+              }
+
+              var linkList = entry["link"];
+              for (var i = 0; (linkList !== undefined) && i < linkList.length; i++) {
+                  if (linkList[i]["rel"] === "alternate") {
+                      var href = linkList[i]["href"];
+                      var title = linkList[i]["title"];
+                      return (href !== undefined && title !== undefined) ? { "href": href, "title": title } : undefined;
+                  }
+              }
+              return undefined;
+          }
+
+          function parseFeedCategoryInfo(feed) {
+              if (feed === undefined) {
+                  return [];
+              }
+
+              var categoryList = [];
+              var category = feed["category"];
+              for (var i = 0; (category !== undefined) && i < category.length; i++) {
+                  var term = category[i]["term"];
+                  if (term !== undefined) {
+                      categoryList.push(term);
+                  }
+              }
+              return categoryList;
+          }
+
+          function composeArticle(articleList) {
+              var nestString = "";
+              articleList.forEach(function (article) {
+				  var hrefLinkString = "<a href='" + article["href"] + "'>";
+                  nestString += "<li>" + hrefLinkString + article["title"] + "</a></li>";
+              })
+              return "<ul class='nest'>" + nestString + "</ul>";
+          }
+
+          function composeHierarchyTagString(bloggerData) {
+              var composeHierarchyTagString = "";
+              Object.keys(bloggerData).forEach(function (category) {
+                  var categoryTitle = category + " (" + bloggerData[category].length + ")";
+                  var categoryContents = "<li class='category'><span class='categoryTag'>&#9660;&#160;</span>" + "<span>" + categoryTitle + "</span>";
+                  categoryContents = categoryContents + composeArticle(bloggerData[category]) + "</li>";
+                  composeHierarchyTagString += categoryContents;
+              });
+              return "<ul>" + composeHierarchyTagString + "</ul>";
+          }
+
+          function parseBloggerData(data) {
+              if (data === undefined || data["feed"] === undefined) {
+                  return {};
+              }
+
+              var result = {};
+              var totalCategoryList = parseFeedCategoryInfo(data["feed"]);
+              if (totalCategoryList !== undefined) {
+                  totalCategoryList.forEach(function (category) {
+                      result[category] = [];
+                  });
+              }
+
+              var entryList = data["feed"]["entry"];
+              if (entryList !== undefined) {
+                  entryList.forEach(function (entry) {
+                      var articleInfo = parseEntryArticleInfo(entry);
+                      var articleCategoryList = parseEntryCategoryInfo(entry);
+
+                      for (var i = 0; i < totalCategoryList.length; i++) {
+                          var targetCategory = totalCategoryList[i];
+                          for (var j = 0; j < articleCategoryList.length; j++) {
+                              if (articleCategoryList[j] === targetCategory) {
+                                  result[targetCategory].push(articleInfo);
+                              }
+                          }
+                      }
+                  });
+              }
+
+              return result;
+          }
+
+          function changeToggleTag(index)
+          {
+              var tag = document.getElementsByClassName("categoryTag")[index];
+              if(tag.innerHTML === "▼&nbsp;")
+              {
+                  tag.innerHTML = "&#9658;&#160;";
+              }
+              else
+              {
+                  tag.innerHTML = "&#9660;&#160;";
+              }
+          }
+
+          function handlePosts(jsonString) {
+              var bloggerData = parseBloggerData(jsonString);
+              var string = composeHierarchyTagString(bloggerData);
+              document.write(string);
+
+              var toggler = document.getElementsByClassName("category");
+              for (var i = 0; i < toggler.length; i++) {
+                  toggler[i].addEventListener("click", (function(index){
+                      return function(){
+                          this.querySelector(".nest").classList.toggle("active");
+                          changeToggleTag(index);
+                      };
+                  })(i));
+              }
+          }
+      // ]]>
+      </script>
+
+      <script src='http://windazure.blogspot.com/feeds/posts/default?alt=json-in-script&amp;max-results=400&amp;start-index=1&amp;callback=handlePosts'></script>
+
+      </div>
+      </div>
+    </b:includable>
+    <b:includable id='flat' var='data'>
+  <ul class='flat'>
+    <b:loop values='data:data' var='i'>
+      <li class='archivedate'>
+        <a expr:href='data:i.url'><data:i.name/></a> (<data:i.post-count/>)
+      </li>
+    </b:loop>
+  </ul>
+</b:includable>
+    <b:includable id='interval' var='intervalData'>
+  <b:loop values='data:intervalData' var='interval'>
+    <ul class='hierarchy'>
+      <li expr:class='&quot;archivedate &quot; + data:interval.expclass'>
+        <b:include cond='data:interval.toggleId' data='interval' name='toggle'/>
+        <a class='post-count-link' expr:href='data:interval.url'>
+          <data:interval.name/>
+        </a>
+        <span class='post-count' dir='ltr'>(<data:interval.post-count/>)</span>
+        <b:include cond='data:interval.data' data='interval.data' name='interval'/>
+        <b:include cond='data:interval.posts' data='interval.posts' name='posts'/>
+      </li>
+    </ul>
+  </b:loop>
+</b:includable>
+    <b:includable id='menu' var='data'>
+  <select expr:id='data:widget.instanceId + &quot;_ArchiveMenu&quot;'>
+    <option value=''><data:title/></option>
+    <b:loop values='data:data' var='i'>
+      <option expr:value='data:i.url'><data:i.name/> (<data:i.post-count/>)</option>
+    </b:loop>
+  </select>
+</b:includable>
+    <b:includable id='posts' var='posts'>
+  <ul class='posts'>
+    <b:loop values='data:posts' var='post'>
+      <li><a expr:href='data:post.url'><data:post.title/></a></li>
+    </b:loop>
+  </ul>
+</b:includable>
+    <b:includable id='toggle' var='interval'>
+  <a class='toggle' href='javascript:void(0)'>
+    <span expr:class='&quot;zippy&quot; + (data:interval.expclass == &quot;expanded&quot; ? &quot; toggle-open&quot; : &quot;&quot;)'>
+      <b:if cond='data:interval.expclass == &quot;expanded&quot;'>
+        &#9660;&#160;
+      <b:elseif cond='data:blog.languageDirection == &quot;rtl&quot;'/>
+        &#9668;&#160;
+      <b:else/>
+        &#9658;&#160;
+      </b:if>
+    </span>
+  </a>
+</b:includable>
+  </b:widget>
