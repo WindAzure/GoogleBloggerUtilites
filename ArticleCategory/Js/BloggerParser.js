@@ -78,3 +78,10 @@ function parseBloggerData(data) {
 
     return result;
 }
+
+module.exports = {
+    parseBloggerData: parseBloggerData,
+    parseFeedCategoryInfo: parseFeedCategoryInfo,
+    parseEntryArticleInfo: parseEntryArticleInfo,
+    parseEntryCategoryInfo: parseEntryCategoryInfo
+};
