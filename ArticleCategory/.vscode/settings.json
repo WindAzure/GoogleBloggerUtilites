@@ -1,0 +1,13 @@
+{
+    "mocha.showInExplorer": true,
+    "mocha.coverage": {
+        "enable": false,
+        "decoration": false,
+        "runWithInterval": false,
+        "autoUpdateInterval": 20000,
+        "activeOnStart": false,
+        "runAfterTest": false,
+        "runCoverageAfterFileSave": false,
+        "reporters": []
+    },
+}
