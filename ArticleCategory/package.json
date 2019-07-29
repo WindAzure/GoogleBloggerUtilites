@@ -1,0 +1,38 @@
+{
+  "name": "articlecategory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "argparse": "^1.0.10",
+    "chai": "^4.2.0",
+    "find-up": "^3.0.0",
+    "locate-path": "^3.0.0",
+    "mocha": "^6.2.0",
+    "npm-run-path": "^2.0.2",
+    "nyc": "^14.1.1",
+    "p-limit": "^2.2.0",
+    "p-locate": "^3.0.0",
+    "p-try": "^2.2.0",
+    "path-exists": "^3.0.0",
+    "path-is-absolute": "^1.0.1",
+    "path-key": "^2.0.1",
+    "require-directory": "^2.1.1",
+    "require-main-filename": "^2.0.0",
+    "semver": "^5.7.0",
+    "set-blocking": "^2.0.0",
+    "shebang-command": "^1.2.0",
+    "shebang-regex": "^1.0.0",
+    "signal-exit": "^3.0.2",
+    "sprintf-js": "^1.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC"
+}
